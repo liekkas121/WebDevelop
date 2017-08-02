@@ -1,0 +1,113 @@
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="alabaster.css" type="text/css" />
+        <link rel="stylesheet" href="pygments.css" type="text/css" />
+        <link rel="stylesheet" href="badge_only.css" type="text/css" />
+    </head>
+    <body>
+        <div class="section" id="authentication">
+<span id="id1"></span><h1>身份认证<a class="headerlink" href="#authentication" title="永久链接至标题">¶</a></h1>
+<p>本篇文档讨论如何配合 Requests 使用多种身份认证方式。</p>
+<p>许多 web 服务都需要身份认证，并且也有多种不同的认证类型。
+以下，我们会从简单到复杂概述 Requests 中可用的几种身份认证形式。</p>
+<div class="section" id="id2">
+<h2>基本身份认证<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>许多要求身份认证的web服务都接受 HTTP Basic Auth。这是最简单的一种身份认证，并且 Requests
+对这种认证方式的支持是直接开箱即可用。</p>
+<p>以 HTTP Basic Auth 发送请求非常简单：</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">requests.auth</span> <span class="k">import</span> <span class="n">HTTPBasicAuth</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'https://api.github.com/user'</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">HTTPBasicAuth</span><span class="p">(</span><span class="s1">'user'</span><span class="p">,</span> <span class="s1">'pass'</span><span class="p">))</span>
+<span class="go">&lt;Response [200]&gt;</span>
+</pre></div>
+</div>
+<p>事实上，HTTP Basic Auth 如此常见，Requests 就提供了一种简写的使用方式：</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'https://api.github.com/user'</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s1">'user'</span><span class="p">,</span> <span class="s1">'pass'</span><span class="p">))</span>
+<span class="go">&lt;Response [200]&gt;</span>
+</pre></div>
+</div>
+<p>像这样在一个元组中提供认证信息与前一个 <code class="docutils literal"><span class="pre">HTTPBasicAuth</span></code> 例子是完全相同的。</p>
+<div class="section" id="netrc">
+<h3>netrc 认证<a class="headerlink" href="#netrc" title="永久链接至标题">¶</a></h3>
+<p>如果认证方法没有收到 <code class="docutils literal"><span class="pre">auth</span></code> 参数，Requests 将试图从用户的 netrc
+文件中获取 URL 的 hostname 需要的认证身份。The netrc file overrides raw HTTP authentication headers
+set with <cite>headers=</cite>.</p>
+<p>如果找到了 hostname 对应的身份，就会以 HTTP Basic Auth 的形式发送请求。</p>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>摘要式身份认证<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>另一种非常流行的 HTTP 身份认证形式是摘要式身份认证，Requests 对它的支持也是开箱即可用的：</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">requests.auth</span> <span class="k">import</span> <span class="n">HTTPDigestAuth</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">url</span> <span class="o">=</span> <span class="s1">'http://httpbin.org/digest-auth/auth/user/pass'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">HTTPDigestAuth</span><span class="p">(</span><span class="s1">'user'</span><span class="p">,</span> <span class="s1">'pass'</span><span class="p">))</span>
+<span class="go">&lt;Response [200]&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="oauth-1">
+<h2>OAuth 1 认证<a class="headerlink" href="#oauth-1" title="永久链接至标题">¶</a></h2>
+<p>Oauth 是一种常见的 Web API 认证方式。 <code class="docutils literal"><span class="pre">requests-oauthlib</span></code>
+库可以让 Requests 用户简单地创建 OAuth 认证的请求：</p>
+<dl class="docutils">
+<dt>::</dt>
+<dd><div class="first highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">requests_oauthlib</span> <span class="k">import</span> <span class="n">OAuth1</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">url</span> <span class="o">=</span> <span class="s1">'https://api.twitter.com/1.1/account/verify_credentials.json'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">auth</span> <span class="o">=</span> <span class="n">OAuth1</span><span class="p">(</span><span class="s1">'YOUR_APP_KEY'</span><span class="p">,</span> <span class="s1">'YOUR_APP_SECRET'</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="s1">'USER_OAUTH_TOKEN'</span><span class="p">,</span> <span class="s1">'USER_OAUTH_TOKEN_SECRET'</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">)</span>
+<span class="go">&lt;Response [200]&gt;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>关于 OAuth 工作流程的更多信息，请参见 <a class="reference external" href="http://oauth.net/">OAuth</a> 官方网站。
+关于 requests-oauthlib 的文档和用例，请参见 GitHub 的 <a class="reference external" href="https://github.com/requests/requests-oauthlib">requests_oauthlib</a> 代码库。</p>
+</div>
+<div class="section" id="oauth-2-openid">
+<h2>OAuth 2 与 OpenID 连接认证<a class="headerlink" href="#oauth-2-openid" title="永久链接至标题">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">requests-oauthlib</span></code> 库还可以处理 OAuth 2，OAuth 2 是 OpenID 连接的基础机制。
+请查看 <a class="reference external" href="http://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html">requests-oauthlib OAuth2 documentation</a> 文档以了解 OAuth 2 的各种认证管理流程：</p>
+<ul class="simple">
+<li><a class="reference external" href="http://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#web-application-flow">Web Application Flow</a></li>
+<li><a class="reference external" href="http://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#mobile-application-flow">Mobile Application Flow</a></li>
+<li><a class="reference external" href="http://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#legacy-application-flow">Legacy Application Flow</a></li>
+<li><a class="reference external" href="http://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#backend-application-flow">Backend Application Flow</a></li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2>其他身份认证形式<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>Requests 的设计允许其他形式的身份认证用简易的方式插入其中。开源社区的成员时常为更复杂或不那么常用的身份认证形式编写认证处理插件。其中一些最优秀的已被收集在 <a class="reference external" href="https://github.com/requests">Requests organization</a> 页面中，包括:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/requests/requests-kerberos">Kerberos</a></li>
+<li><a class="reference external" href="https://github.com/requests/requests-ntlm">NTLM</a></li>
+</ul>
+<p>如果你想使用其中任何一种身份认证形式，直接去它们的 GitHub 页面，依照说明进行。</p>
+</div>
+<div class="section" id="id5">
+<h2>新的身份认证形式<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<p>如果你找不到所需要的身份认证形式的一个良好实现，你也可以自己实现它。Requests 非常易于添加你自己的身份认证形式。</p>
+<p>要想自己实现，就从 <a class="reference internal" href="../api.html#requests.auth.AuthBase" title="requests.auth.AuthBase"><code class="xref py py-class docutils literal"><span class="pre">AuthBase</span></code></a> 继承一个子类，并实现 <code class="docutils literal"><span class="pre">__call__()</span></code> 方法：</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyAuth</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">auth</span><span class="o">.</span><span class="n">AuthBase</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="c1"># Implement my authentication</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">r</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">url</span> <span class="o">=</span> <span class="s1">'http://httpbin.org/get'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">MyAuth</span><span class="p">())</span>
+<span class="go">&lt;Response [200]&gt;</span>
+</pre></div>
+</div>
+<p>当一个身份认证模块被附加到一个请求上，在设置 request 期间就会调用该模块。因此 <code class="docutils literal"><span class="pre">__call__</span></code>
+方法必须完成使得身份认证生效的所有事情。一些身份认证形式会额外地添加钩子来提供进一步的功能。</p>
+<p>你可以在 <a class="reference external" href="https://github.com/requests">Requests organization</a> 页面的 <code class="docutils literal"><span class="pre">auth.py</span></code> 文件中找到更多示例。</p>
+</div>
+</div>
+    </body>
+</html>
